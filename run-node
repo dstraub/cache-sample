@@ -1,0 +1,32 @@
+#!/bin/bash
+
+JBOSS_EAP_BIN="/Users/ds/Work/eap/7.2/bin"
+CLUSTER_IP=192.168.1.46
+
+NODE=$1
+
+if [ x"$NODE" = "x" ]; then
+ NODE=1
+fi
+
+case $NODE in
+ 1) JAVA_OPTS="-Xrunjdwp:transport=dt_socket,address=8686,server=y,suspend=n"
+    OFFSET=100
+    ;;
+ 2) OFFSET=200
+    ;;
+esac
+
+JAVA_OPTS="$JAVA_OPTS -Xms1303m -Xmx1303m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
+JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"
+JAVA_OPTS="$JAVA_OPTS -Duser.language=en"
+
+JAVA_OPTS="$JAVA_OPTS -Djboss.server.base.dir=$(pwd)/target/node$NODE"
+JAVA_OPTS="$JAVA_OPTS -Djboss.socket.binding.port-offset=$OFFSET"
+JAVA_OPTS="$JAVA_OPTS -Djboss.server.name=cache$NODE"
+JAVA_OPTS="$JAVA_OPTS -Djboss.bind.address.private=$CLUSTER_IP"
+
+export JAVA_OPTS
+
+$JBOSS_EAP_BIN/standalone.sh
+
